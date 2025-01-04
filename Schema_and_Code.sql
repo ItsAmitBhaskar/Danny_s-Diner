@@ -101,7 +101,7 @@ from sales
 group by customer_id, product_id) as derivedtable
 where rn=1)
 
-select customer_id, group_concat(m.product_name),max( ordertotal) as no_of_times_each_item_ordered
+select customer_id, group_concat(m.product_name) as products,max( ordertotal) as no_of_times_each_item_ordered
 from popularitycte pc join menu m
 on pc.product_id = m.product_id
 group by pc.customer_id
