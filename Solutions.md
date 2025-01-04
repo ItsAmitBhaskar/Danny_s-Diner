@@ -35,7 +35,7 @@
 
 ***
 ## Solution
-[View the complete code](https://github.com/ItsAmitBhaskar/Danny_s-Diner/commit/d1d77ac4a5a94432866ec0fe095ab1df876f7b7f).
+[View the complete code](https://github.com/ItsAmitBhaskar/Danny_s-Diner/blob/main/Schema_and_Code.sql)
 ***
 
 ### 1. What is the total amount each customer spent at the restaurant?
