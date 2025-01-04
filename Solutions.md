@@ -1,13 +1,12 @@
 # Case Study 1: Danny's Diner
 
 ## Solution
-
 [View the complete code](https://github.com/ItsAmitBhaskar/Danny_s-Diner/commit/d1d77ac4a5a94432866ec0fe095ab1df876f7b7f).
 
 ***
 
 ### 1. What is the total amount each customer spent at the restaurant?
-
+#### MySQL Query
 ```sql
 SELECT
   s.customer_id, sum(m.price) as amount_spent
@@ -16,39 +15,33 @@ LEFT JOIN menu m ON s.product_id = m.product_id
 GROUP BY s.customer_id
 ORDER BY s.customer_id;
 ```
-
 #### Answer:
-| Customer_id | Total_sales |
+| customer_id | amount_spent |
 | ----------- | ----------- |
 | A           | 76          |
 | B           | 74          |
 | C           | 36          |
 
-- Customer A, B and C spent $76, $74 and $36 respectivly.
-
 ***
 
 ### 2. How many days has each customer visited the restaurant?
-
+#### MySQL Query
 ```sql
 select customer_id, count(distinct order_date) as num_of_days_visited
 from sales
 group by customer_id;
 ```
-
 #### Answer:
-| Customer_id | Times_visited |
+| customer_id | num_of_days_visited |
 | ----------- | ----------- |
 | A           | 4          |
 | B           | 6          |
 | C           | 2          |
 
-- Customer A, B and C visited 4, 6 and 2 times respectivly.
-
 ***
 
 ### 3. What was the first item from the menu purchased by each customer?
-
+#### MySQL Query
 ```sql
 SELECT
 distinct customer_id, product_name as first_order
@@ -63,21 +56,17 @@ WHERE rn=1;
 ````
 
 #### Answer:
-| Customer_id | product_name | 
+| customer_id | first_order | 
 | ----------- | ----------- |
-| A           | curry        | 
-| A           | sushi        | 
-| B           | curry        | 
-| C           | ramen        |
-
-- Customer A's first order is curry and sushi.
-- Customer B's first order is curry.
-- Customer C's first order is ramen.
+| A           | sushi       | 
+| A           | curry       | 
+| B           | curry       | 
+| C           | ramen       |
 
 ***
 
 ### 4. What is the most purchased item on the menu and how many times was it purchased by all customers?
-
+#### MySQL Query
 ````sql
 with orderedtotal as (
   select product_id, count(customer_id) as total_orders, dense_rank() over (order by count(customer_id) desc) as rn
@@ -91,20 +80,15 @@ join menu m on od.product_id = m.product_id
 where rn=1;
 ````
 
-
-
 #### Answer:
-| Product_name  | Times_Purchased | 
-| ----------- | ----------- |
-| ramen       | 8|
-
-
-- Most purchased item on the menu is ramen which is 8 times.
+| product_id  | product_name | total_orders|
+| ----------- | ----------- |--------------|
+|    3        | ramen       |8             |
 
 ***
 
 ### 5. Which item was the most popular for each customer?
-
+#### MySQL Query
 ````sql
 WITH popularitycte as
 (
@@ -119,7 +103,7 @@ WITH popularitycte as
   WHERE rn=1
 )
 
-SELECT customer_id, group_concat(m.product_name),max( ordertotal) as no_of_times_each_item_ordered
+SELECT customer_id, group_concat(m.product_name) as products,max( ordertotal) as no_of_times_each_item_ordered
 FROM popularitycte pc
 JOIN menu m ON pc.product_id = m.product_id
 GROUP BY pc.customer_id
@@ -127,20 +111,16 @@ ORDER BY customer_id;
 ````
 
 #### Answer:
-| Customer_id | Product_name | Count |
-| ----------- | ---------- |------------  |
-| A           | ramen        |  3   |
-| B           | sushi        |  2   |
-| B           | curry        |  2   |
-| B           | ramen        |  2   |
-| C           | ramen        |  3   |
-
-- Customer A and C's favourite item is ramen while customer B savours all items on the menu. 
+| customer_id | products          | no_of_times_each_item_ordered |
+| ----------- | ------------------|-------------------------------|
+| A           | ramen             |  3                            |
+| B           | sushi,curry,ramen |  2                            |
+| C           | ramen             |  3                            |
 
 ***
 
 ### 6. Which item was purchased first by the customer after they became a member?
-
+#### MySQL Query
 ````sql
 WITH firstpurchasecte AS
 (
@@ -169,14 +149,10 @@ order by fp.customer_id;
 | A           |  curry        |2021-01-07 |
 | B           |  sushi        |2021-01-11 |
 
-After becoming a member 
-- Customer A's first order was curry.
-- Customer B's first order was sushi.
-
 ***
 
 ### 7. Which item was purchased just before the customer became a member?
-
+#### MySQL Query
 ````sql
 WITH lastpurchasecte AS
 (
@@ -206,14 +182,10 @@ order by lp.customer_id;
 | A           |  curry      |2021-01-01 | 
 | B           |   sushi     |2021-01-04 |
 
-Before becoming a member 
-- Customer A’s last order was sushi and curry.
-- Customer B’s last order wassushi.
-
 ***
 
 ### 8. What is the total items and amount spent for each member before they became a member?
-
+#### MySQL Query
 ````sql
 SELECT 
 mem.customer_id, count(s.product_id) as total_items, sum(m.price) as total_amount
@@ -232,14 +204,10 @@ order by mem.customer_id;
 | A           | 2 |  25       |
 | B           | 3 |  40       |
 
-Before becoming a member
-- Customer A spent $25 on 2 items.
-- Customer B spent $40 on 3 items.
-
 ***
 
 ### 9. If each $1 spent equates to 10 points and sushi has a 2x points multiplier — how many points would each customer have?
-
+#### MySQL Query
 ````sql
 SELECT 
 s.customer_id, 
@@ -258,12 +226,10 @@ order by s.customer_id;
 | B           | 940 |
 | C           | 360 |
 
-- Total points for customer A, B and C are 860, 940 and 360 respectivly.
-
 ***
 
 ### 10. In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi — how many points do customer A and B have at the end of January?
-
+#### MySQL Query
 ````sql
 WITH saleswithpricecte as
 (
@@ -296,7 +262,5 @@ order by customer_id;
 | ----------- | ---------- |
 | A           | 1370 |
 | B           | 820 |
-
-- Total points for Customer A and B are 1,370 and 820 respectivly.
 
 ***
