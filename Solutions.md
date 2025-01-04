@@ -8,13 +8,13 @@
 
 ### 1. What is the total amount each customer spent at the restaurant?
 
-````sql
+```sql
 select s.customer_id, sum(m.price) as amount_spent
 from sales s 
 left join menu m on s.product_id = m.product_id
 group by s.customer_id
 order by s.customer_id;
-````
+```
 
 #### Answer:
 | Customer_id | Total_sales |
