@@ -30,5 +30,5 @@ He shared with me three key datasets for this case study:
 ***
 
 + [View the complete schema and code](https://github.com/ItsAmitBhaskar/Danny_s-Diner/blob/main/Schema_and_Code.sql)
-+ [View question wise queries and outputs](https://github.com/ItsAmitBhaskar/Danny_s-Diner/blob/main/Schema_and_Code.sql)
++ [View question wise queries and outputs](https://github.com/ItsAmitBhaskar/Danny_s-Diner/blob/main/Solutions.md)
 
