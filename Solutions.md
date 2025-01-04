@@ -2,7 +2,7 @@
 
 ## Solution
 
-[View the complete code]().
+[View the complete code](https://github.com/ItsAmitBhaskar/Danny_s-Diner/commit/d1d77ac4a5a94432866ec0fe095ab1df876f7b7f).
 
 ***
 
