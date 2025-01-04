@@ -125,7 +125,7 @@ select fp.customer_id, m.product_name as first_ordered_item
 from firstpurchasecte fp
 join menu m
 on fp.product_id = m.product_id
-order by fp.fp.customer_id;
+order by fp.customer_id;
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 -- Ques 7. Which item was purchased just before the customer became a member?
