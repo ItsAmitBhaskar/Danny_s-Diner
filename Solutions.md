@@ -2,18 +2,18 @@
 
 ## Solution
 
-[View the complete code](https://github.com/YogeshOlla/8-Weeks-SQL-Challenge/blob/main/Case%20Study%201%20-%20Danny's%20Diner/SQL%20Code/Case%20Study%201%20-%20Danny's%20Diner.sql).
+[View the complete code]().
 
 ***
 
 ### 1. What is the total amount each customer spent at the restaurant?
 
 ````sql
-Select S.customer_id, Sum(M.price) as Total_sales
-From Menu m
-Join Sales s
-On m.product_id = s.product_id
-Group by S.customer_id
+select s.customer_id, sum(m.price) as amount_spent
+from sales s 
+left join menu m on s.product_id = m.product_id
+group by s.customer_id
+order by s.customer_id;
 ````
 
 #### Answer:
@@ -30,9 +30,9 @@ Group by S.customer_id
 ### 2. How many days has each customer visited the restaurant?
 
 ````sql
-Select customer_id, count(distinct(order_date)) as Times_visited
-From Sales
-Group by customer_id
+select customer_id, count(distinct order_date) as num_of_days_visited
+from sales
+group by customer_id;
 ````
 
 #### Answer:
@@ -49,20 +49,13 @@ Group by customer_id
 ### 3. What was the first item from the menu purchased by each customer?
 
 ````sql
-With Rank as
-(
-Select S.customer_id, 
-       M.product_name, 
-	     S.order_date,
-	     DENSE_RANK() OVER (PARTITION BY S.Customer_ID Order by S.order_date) as rank
-From Menu m
-Join Sales s
-On m.product_id = s.product_id
-Group by S.customer_id, M.product_name,S.order_date
-)
-Select Customer_id, product_name
-From Rank
-Where rank = 1;
+SELECT distinct customer_id, product_name as first_order
+from
+( select s.customer_id, m.product_name,
+dense_rank() over (partition by s.customer_id order by s.order_date) as rn
+FROM sales s left join menu m 
+on s.product_id = m.product_id) as derivedtable
+where rn=1;
 ````
 
 #### Answer:
@@ -82,12 +75,15 @@ Where rank = 1;
 ### 4. What is the most purchased item on the menu and how many times was it purchased by all customers?
 
 ````sql
-Select Top 1 M.Product_name , Count(S.product_id) as Times_Purchased
-From Menu m
-Join Sales s
-On m.product_id = s.product_id
-Group by M.product_name
-Order by Count(S.product_id) desc;
+with orderedtotal as (
+select product_id, count(customer_id) as total_orders, dense_rank() over (order by count(customer_id) desc) as rn
+from sales 
+group by product_id)
+
+select od.product_id, m.product_name, total_orders 
+from orderedtotal od join menu m
+on od.product_id = m.product_id
+where rn=1;
 ````
 
 
@@ -105,20 +101,19 @@ Order by Count(S.product_id) desc;
 ### 5. Which item was the most popular for each customer?
 
 ````sql
-With rank as
-(
-Select S.customer_ID ,
-       M.product_name, 
-	   Count(S.product_id) as Count,
-       Dense_rank()  Over (Partition by S.Customer_ID order by Count(S.product_id) DESC ) as Rank
-From Menu m
-Join Sales s
-On m.product_id = s.product_id
-Group by S.customer_id,S.product_id,M.product_name
-)
-Select Customer_id,Product_name,Count
-From rank
-Where rank = 1;
+with popularitycte as (
+select customer_id, product_id, ordertotal
+from (
+SELECT customer_id, product_id, count(*) as ordertotal, dense_rank() over (partition by customer_id order by count(*) desc) as rn
+from sales
+group by customer_id, product_id) as derivedtable
+where rn=1)
+
+select customer_id, group_concat(m.product_name),max( ordertotal) as no_of_times_each_item_ordered
+from popularitycte pc join menu m
+on pc.product_id = m.product_id
+group by pc.customer_id
+order by customer_id;
 ````
 
 #### Answer:
@@ -137,22 +132,22 @@ Where rank = 1;
 ### 6. Which item was purchased first by the customer after they became a member?
 
 ````sql
-With Rank as
-(
-Select  S.customer_id,
-        M.product_name,
-        S.order_date,
-			  Dense_rank() OVER (Partition by S.Customer_id Order by S.Order_date) as Rank
-From Sales S
-Join Menu M
-ON m.product_id = s.product_id
-JOIN Members Mem
-ON Mem.Customer_id = S.customer_id
-Where S.order_date >= Mem.join_date  
-)
-Select Customer_id, Product_name, Order_date
-From Rank
-Where Rank = 1;
+with firstpurchasecte as (
+select customer_id, product_id
+from (
+SELECT 
+mem.customer_id, s.order_date, s.product_id, 
+dense_rank() over (partition by mem.customer_id order by s.order_date) as rn
+FROM members mem join sales s
+on mem.customer_id = s.customer_id 
+and s.order_date >= mem.join_date) as derivedtable
+where rn=1)
+
+select fp.customer_id, m.product_name as first_ordered_item
+from firstpurchasecte fp
+join menu m
+on fp.product_id = m.product_id
+order by fp.fp.customer_id;
 ````
 
 
@@ -171,22 +166,23 @@ After becoming a member
 ### 7. Which item was purchased just before the customer became a member?
 
 ````sql
-With Rank as
-(
-Select  S.customer_id,
-        M.product_name,
-        S.Order_date,
-			  Dense_rank() OVER (Partition by S.Customer_id Order by S.Order_date) as Rank
-From Sales S
-Join Menu M
-On m.product_id = s.product_id
-Join Members Mem
-On Mem.Customer_id = S.customer_id
-Where S.order_date < Mem.join_date  
-)
-Select customer_ID, Product_name,Order_date
-From Rank
-Where Rank = 1;
+with lastpurchasecte as (
+select customer_id, product_id
+from (
+SELECT 
+mem.customer_id, s.order_date, s.product_id, 
+dense_rank() over (partition by mem.customer_id order by s.order_date desc) as rn
+FROM members mem join sales s
+on mem.customer_id = s.customer_id 
+and s.order_date < mem.join_date) as derivedtable
+where rn=1)
+
+select lp.customer_id, group_concat(m.product_name) as last_ordered_items_before_membership
+from lastpurchasecte lp
+join menu m
+on lp.product_id = m.product_id
+group by lp.customer_id
+order by lp.customer_id;
 ````
 
 #### Answer:
@@ -205,14 +201,13 @@ Before becoming a member
 ### 8. What is the total items and amount spent for each member before they became a member?
 
 ````sql
-Select S.customer_id,count(S.product_id ) as Items ,Sum(M.price) as total_sales
-From Sales S
-Join Menu M
-ON m.product_id = s.product_id
-JOIN Members Mem
-ON Mem.Customer_id = S.customer_id
-Where S.order_date < Mem.join_date
-Group by S.customer_id;
+SELECT 
+mem.customer_id, count(s.product_id) as total_items, sum(m.price) as total_amount
+FROM members mem 
+join sales s on mem.customer_id = s.customer_id and s.order_date < mem.join_date
+join menu m on s.product_id = m.product_id
+group by mem.customer_id
+order by mem.customer_id;
 
 ````
 
@@ -232,18 +227,13 @@ Before becoming a member
 ### 9. If each $1 spent equates to 10 points and sushi has a 2x points multiplier — how many points would each customer have?
 
 ````sql
-With Points as
-(
-Select *, Case When product_id = 1 THEN price*20
-               Else price*10
-			   End as Points
-From Menu
-)
-Select S.customer_id, Sum(P.points) as Points
-From Sales S
-Join Points p
-On p.product_id = S.product_id
-Group by S.customer_id;
+SELECT 
+s.customer_id, 
+sum(case when s.product_id=1 then m.price*20 else m.price*10 end) as total_points
+FROM sales s
+join menu m on s.product_id = m.product_id
+group by s.customer_id
+order by s.customer_id;
 ````
 
 
@@ -261,28 +251,28 @@ Group by S.customer_id;
 ### 10. In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi — how many points do customer A and B have at the end of January?
 
 ````sql
-WITH dates AS 
-(
-   SELECT *, 
-   DATEADD(DAY, 6, join_date) AS valid_date, 
-   EOMONTH('2021-01-31') AS last_date
-   FROM members 
-)
-Select S.Customer_id, 
-       SUM(
-	         Case 
-		       When m.product_ID = 1 THEN m.price*20
-			     When S.order_date between D.join_date and D.valid_date Then m.price*20
-			     Else m.price*10
-			     END 
-		       ) as Points
-From Dates D
-join Sales S
-On D.customer_id = S.customer_id
-Join Menu M
-On M.product_id = S.product_id
-Where S.order_date < d.last_date
-Group by S.customer_id;
+WITH saleswithpricecte as (
+SELECT s.*,mem.join_date, m.price
+from sales s
+join menu m on s.product_id = m.product_id
+join members mem on s.customer_id = mem.customer_id
+),
+
+finalcte as (
+
+select *, 
+case 
+when datediff(order_date, join_date) between 0 and 6 
+then price*20 
+else 
+(case when product_id=1 then price*20 else price*10 end) end as points
+from saleswithpricecte)
+
+select customer_id, sum(points) as total_points
+from finalcte
+where month(order_date) = 01 and year(order_date)='2021'
+group by customer_id
+order by customer_id;
 ````
 
 #### Answer:
